@@ -1,21 +1,23 @@
 # Paylora Pro
 
-Paylora Pro est une plateforme MVP de paiement conçue pour suivre les paiements, visualiser les métriques et simuler un flux simple de transactions.
+Paylora Pro is an MVP fintech payments dashboard for tracking transactions, monitoring success rates, and simulating payment flows.
 
-## Fonctionnalités
+## Features
 
-- Tableau de bord de performance
-- Suivi des transactions récentes
-- Soumission de paiements de démonstration
-- API HTTP simple pour l’intégration ou le test
+- Payment dashboard and KPI overview
+- Recent transactions table
+- Payment submission form
+- REST health and summary endpoints
+- JSON-based local data storage for demo mode
 
-## Démarrage
+## Run locally
 
 ```bash
-node server.js
+npm install
+npm start
 ```
 
-Puis ouvrez :
+Then open:
 
 ```text
 http://localhost:3000
@@ -23,12 +25,12 @@ http://localhost:3000
 
 ## API
 
-- `GET /api/health` : vérifie le statut du service
-- `GET /api/summary` : retourne les métriques et transactions
-- `POST /api/payments` : enregistre un paiement simulé
+- `GET /api/health` — service status
+- `GET /api/summary` — current metrics and transactions
+- `POST /api/payments` — create a simulated payment
 
 ## Stack
 
-- JavaScript vanilla
-- Node.js, HTTP natif
-- HTML/CSS/JS pour le front
+- Node.js
+- HTTP server (no framework)
+- HTML/CSS/JS frontend
