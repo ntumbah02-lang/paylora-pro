@@ -1,294 +1,73 @@
-* {
-  box-sizing: border-box;
+const formatMoney = (value) => `${Number(value).toLocaleString('fr-FR')} FC`;
+
+const api = {
+  async getSummary() {
+    const response = await fetch('/api/summary');
+    if (!response.ok) throw new Error('Impossible de récupérer le résumé');
+    return response.json();
+  },
+
+  async createPayment(payload) {
+    const response = await fetch('/api/payments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Erreur de paiement');
+    return data;
+  },
+};
+
+function statusClass(status) {
+  if (status === 'Succès') return 'status-success';
+  if (status === 'En attente') return 'status-pending';
+  return 'status-error';
 }
 
-:root {
-  --bg: #f4f7fb;
-  --surface: #ffffff;
-  --surface-alt: #eef4ff;
-  --primary: #1d4ed8;
-  --primary-soft: #dbeafe;
-  --dark: #0f172a;
-  --muted: #5b6477;
-  --accent: #22c55e;
-  --danger: #ef4444;
-  --border: #e5e7eb;
-  --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+function renderTransactions(transactions) {
+  const tbody = document.querySelector('#transactionsTable');
+  tbody.innerHTML = transactions.map((item) => `
+    <tr>
+      <td>${item.id}</td>
+      <td>${item.customer}</td>
+      <td>${formatMoney(item.amount)}</td>
+      <td><span class="status-pill ${statusClass(item.status)}">${item.status}</span></td>
+      <td>${item.channel}</td>
+    </tr>
+  `).join('');
 }
 
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: linear-gradient(135deg, #eef4ff 0%, #f8fafc 100%);
-  color: var(--dark);
+async function refreshDashboard() {
+  const data = await api.getSummary();
+  document.querySelector('#totalVolume').textContent = formatMoney(data.metrics.totalVolume);
+  document.querySelector('#successRate').textContent = `${data.metrics.successRate}%`;
+  document.querySelector('#activeMerchants').textContent = data.metrics.activeMerchants;
+  document.querySelector('#pendingPayouts').textContent = formatMoney(data.metrics.pendingPayouts);
+  renderTransactions(data.transactions.slice(0, 8));
 }
 
-button, input, select {
-  font: inherit;
-}
+document.querySelector('#paymentForm')?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const payload = {
+    customer: document.querySelector('#customer').value,
+    amount: Number(document.querySelector('#amount').value),
+    channel: document.querySelector('#channel').value,
+  };
 
-.app-shell {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  min-height: 100vh;
-}
+  const message = document.querySelector('#formMessage');
+  message.textContent = 'Traitement en cours...';
 
-.sidebar {
-  background: #0f172a;
-  color: #f8fafc;
-  padding: 28px 22px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 36px;
-}
-
-.brand-mark {
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #60a5fa, #2563eb);
-  font-weight: 700;
-  font-size: 1.4rem;
-}
-
-.brand h1,
-.brand p {
-  margin: 0;
-}
-
-.brand p {
-  color: #cbd5e1;
-}
-
-.nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.nav a {
-  text-decoration: none;
-  color: #dfe8f5;
-  padding: 12px 14px;
-  border-radius: 10px;
-  transition: 0.2s ease;
-}
-
-.nav a:hover,
-.nav a.active {
-  background: rgba(96, 165, 250, 0.15);
-  color: #fff;
-}
-
-.main-panel {
-  padding: 30px;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 26px;
-}
-
-.eyebrow {
-  margin: 0 0 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  font-size: 0.72rem;
-}
-
-.topbar h2 {
-  margin: 0;
-  font-size: clamp(1.7rem, 2vw, 2.4rem);
-}
-
-.primary-btn,
-.ghost-btn {
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.primary-btn:hover,
-.ghost-btn:hover {
-  transform: translateY(-1px);
-}
-
-.primary-btn {
-  background: var(--primary);
-  color: #fff;
-  padding: 12px 18px;
-  box-shadow: var(--shadow);
-}
-
-.ghost-btn {
-  background: #eff6ff;
-  color: var(--primary);
-  padding: 10px 14px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(180px, 1fr));
-  gap: 18px;
-  margin-bottom: 26px;
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 18px 20px;
-  box-shadow: var(--shadow);
-}
-
-.stat-card.accent {
-  background: linear-gradient(135deg, #eff6ff, #ffffff);
-}
-
-.stat-card span,
-.stat-card small {
-  display: block;
-  color: var(--muted);
-}
-
-.stat-card strong {
-  display: block;
-  margin: 12px 0 8px;
-  font-size: clamp(1.3rem, 2vw, 2rem);
-}
-
-.content-grid {
-  display: grid;
-  grid-template-columns: 1.7fr 1fr;
-  gap: 24px;
-}
-
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  box-shadow: var(--shadow);
-  padding: 20px;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.panel-header h3 {
-  margin: 0;
-}
-
-.table-wrap {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  padding: 12px 10px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-
-th {
-  color: var(--muted);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-}
-
-.status-pill {
-  display: inline-flex;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.status-success {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.status-pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-error {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.form-panel {
-  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
-}
-
-#paymentForm {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-#paymentForm label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: var(--muted);
-  font-weight: 600;
-}
-
-#paymentForm input,
-#paymentForm select {
-  border: 1px solid var(--border);
-  background: #fff;
-  border-radius: 10px;
-  padding: 12px 13px;
-  color: var(--dark);
-}
-
-.full {
-  width: 100%;
-  margin-top: 6px;
-}
-
-.form-message {
-  min-height: 20px;
-  margin-top: 14px;
-  color: #0f766e;
-  font-weight: 600;
-}
-
-@media (max-width: 920px) {
-  .app-shell {
-    grid-template-columns: 1fr;
+  try {
+    await api.createPayment(payload);
+    message.textContent = 'Paiement traité avec succès.';
+    form.reset();
+    await refreshDashboard();
+  } catch (error) {
+    message.textContent = error.message;
   }
+});
 
-  .sidebar {
-    padding-bottom: 10px;
-  }
-
-  .stats-grid,
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-
+refreshDashboard();

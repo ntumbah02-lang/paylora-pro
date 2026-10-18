@@ -1,119 +1,117 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paylora Pro</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">P</div>
+          <div>
+            <h1>Paylora</h1>
+            <p>Pro</p>
+          </div>
+        </div>
 
-const PORT = process.env.PORT || 3000;
-const PUBLIC_DIR = path.join(__dirname, 'public');
+        <nav class="nav">
+          <a class="active" href="#">Dashboard</a>
+          <a href="#">Transactions</a>
+          <a href="#">Marchands</a>
+          <a href="#">Rapports</a>
+        </nav>
+      </aside>
 
-const dashboard = {
-  metrics: {
-    totalVolume: 2847000,
-    successRate: 98.7,
-    activeMerchants: 128,
-    pendingPayouts: 48250,
-  },
-  transactions: [
-    { id: 'TXN-1024', customer: 'Aline M.', amount: 240, status: 'Succès', channel: 'Mobile Money' },
-    { id: 'TXN-1025', customer: 'Jean K.', amount: 1600, status: 'Succès', channel: 'Carte bancaire' },
-    { id: 'TXN-1026', customer: 'EA Logistics', amount: 890, status: 'En attente', channel: 'Virement' },
-    { id: 'TXN-1027', customer: 'Mia S.', amount: 340, status: 'Succès', channel: 'Orange Money' },
-    { id: 'TXN-1028', customer: 'Nuru Retail', amount: 1200, status: 'Échec', channel: 'Carte bancaire' },
-  ],
-};
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Vue d’ensemble</p>
+            <h2>Centre de paiement</h2>
+          </div>
+          <button class="primary-btn">Nouvelle transaction</button>
+        </header>
 
-function sendJson(res, statusCode, payload) {
-  res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
-  res.end(JSON.stringify(payload));
-}
+        <section class="stats-grid">
+          <article class="stat-card accent">
+            <span>Volume total</span>
+            <strong id="totalVolume">0 FC</strong>
+            <small>+12.4% vs mois dernier</small>
+          </article>
+          <article class="stat-card">
+            <span>Taux de succès</span>
+            <strong id="successRate">0%</strong>
+            <small>Très stable</small>
+          </article>
+          <article class="stat-card">
+            <span>Marchands actifs</span>
+            <strong id="activeMerchants">0</strong>
+            <small>+8 cette semaine</small>
+          </article>
+          <article class="stat-card">
+            <span>Paiements en attente</span>
+            <strong id="pendingPayouts">0 FC</strong>
+            <small>À traiter aujourd’hui</small>
+          </article>
+        </section>
 
-function serveFile(res, filePath) {
-  const extensions = {
-    '.html': 'text/html; charset=utf-8',
-    '.css': 'text/css; charset=utf-8',
-    '.js': 'application/javascript; charset=utf-8',
-    '.json': 'application/json; charset=utf-8',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.svg': 'image/svg+xml',
-  };
+        <section class="content-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Transactions récentes</h3>
+              <button class="ghost-btn">Exporter</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Client</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                    <th>Canal</th>
+                  </tr>
+                </thead>
+                <tbody id="transactionsTable"></tbody>
+              </table>
+            </div>
+          </div>
 
-  const safePath = path.normalize(filePath);
-  const fullPath = path.join(__dirname, safePath);
+          <div class="panel form-panel">
+            <div class="panel-header">
+              <h3>Soumettre un paiement</h3>
+            </div>
+            <form id="paymentForm">
+              <label>
+                Client
+                <input type="text" id="customer" name="customer" placeholder="Nom du client" required />
+              </label>
 
-  if (!fullPath.startsWith(__dirname)) {
-    res.writeHead(403);
-    res.end('Forbidden');
-    return;
-  }
+              <label>
+                Montant (FC)
+                <input type="number" id="amount" name="amount" min="1" placeholder="5000" required />
+              </label>
 
-  fs.readFile(fullPath, (err, content) => {
-    if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('Not found');
-      return;
-    }
+              <label>
+                Canal
+                <select id="channel" name="channel">
+                  <option value="Mobile Money">Mobile Money</option>
+                  <option value="Carte bancaire">Carte bancaire</option>
+                  <option value="Virement">Virement</option>
+                  <option value="Orange Money">Orange Money</option>
+                </select>
+              </label>
 
-    const extension = path.extname(fullPath);
-    res.writeHead(200, { 'Content-Type': extensions[extension] || 'application/octet-stream' });
-    res.end(content);
-  });
-}
+              <button type="submit" class="primary-btn full">Traiter le paiement</button>
+            </form>
+            <p id="formMessage" class="form-message" aria-live="polite"></p>
+          </div>
+        </section>
+      </main>
+    </div>
 
-const server = http.createServer((req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-
-  if (req.method === 'GET' && url.pathname === '/api/health') {
-    sendJson(res, 200, { status: 'ok', service: 'Paylora Pro', timestamp: new Date().toISOString() });
-    return;
-  }
-
-  if (req.method === 'GET' && url.pathname === '/api/summary') {
-    sendJson(res, 200, dashboard);
-    return;
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/payments') {
-    let body = '';
-
-    req.on('data', (chunk) => {
-      body += chunk;
-    });
-
-    req.on('end', () => {
-      try {
-        const payload = body ? JSON.parse(body) : {};
-        const transaction = {
-          id: `TXN-${Math.floor(Math.random() * 9000 + 1000)}`,
-          customer: payload.customer || 'Client anonyme',
-          amount: Number(payload.amount) || 0,
-          status: 'Succès',
-          channel: payload.channel || 'Mobile Money',
-        };
-
-        dashboard.transactions.unshift(transaction);
-        dashboard.metrics.totalVolume += transaction.amount;
-
-        sendJson(res, 201, {
-          message: 'Paiement traité avec succès',
-          transaction,
-        });
-      } catch (error) {
-        sendJson(res, 400, { error: 'Données de paiement invalides' });
-      }
-    });
-    return;
-  }
-
-  if (req.method === 'GET' && url.pathname === '/') {
-    serveFile(res, 'public/index.html');
-    return;
-  }
-
-  const requestedPath = url.pathname === '/' ? '/index.html' : url.pathname;
-  const filePath = path.join('public', requestedPath);
-  serveFile(res, filePath);
-});
-
-server.listen(PORT, () => {
-  console.log(`Paylora Pro running on http://localhost:${PORT}`);
-});
+    <script src="/app.js"></script>
+  </body>
+</html>
