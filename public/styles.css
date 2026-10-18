@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paylora Pro</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">P</div>
+          <div>
+            <h1>Paylora</h1>
+            <p>Pro</p>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a class="active" href="#">Dashboard</a>
+          <a href="#">Transactions</a>
+          <a href="#">Marchands</a>
+          <a href="#">Rapports</a>
+        </nav>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Vue d’ensemble</p>
+            <h2>Centre de paiement</h2>
+          </div>
+          <button class="primary-btn">Nouvelle transaction</button>
+        </header>
+
+        <section class="stats-grid">
+          <article class="stat-card accent">
+            <span>Volume total</span>
+            <strong id="totalVolume">0 FC</strong>
+            <small>+12.4% vs mois dernier</small>
+          </article>
+          <article class="stat-card">
+            <span>Taux de succès</span>
+            <strong id="successRate">0%</strong>
+            <small>Très stable</small>
+          </article>
+          <article class="stat-card">
+            <span>Marchands actifs</span>
+            <strong id="activeMerchants">0</strong>
+            <small>+8 cette semaine</small>
+          </article>
+          <article class="stat-card">
+            <span>Paiements en attente</span>
+            <strong id="pendingPayouts">0 FC</strong>
+            <small>À traiter aujourd’hui</small>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Transactions récentes</h3>
+              <button class="ghost-btn">Exporter</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Client</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                    <th>Canal</th>
+                  </tr>
+                </thead>
+                <tbody id="transactionsTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel form-panel">
+            <div class="panel-header">
+              <h3>Soumettre un paiement</h3>
+            </div>
+            <form id="paymentForm">
+              <label>
+                Client
+                <input type="text" id="customer" name="customer" placeholder="Nom du client" required />
+              </label>
+
+              <label>
+                Montant (FC)
+                <input type="number" id="amount" name="amount" min="1" placeholder="5000" required />
+              </label>
+
+              <label>
+                Canal
+                <select id="channel" name="channel">
+                  <option value="Mobile Money">Mobile Money</option>
+                  <option value="Carte bancaire">Carte bancaire</option>
+                  <option value="Virement">Virement</option>
+                  <option value="Orange Money">Orange Money</option>
+                </select>
+              </label>
+
+              <button type="submit" class="primary-btn full">Traiter le paiement</button>
+            </form>
+            <p id="formMessage" class="form-message" aria-live="polite"></p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
+
+

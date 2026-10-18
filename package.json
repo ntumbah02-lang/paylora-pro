@@ -1,0 +1,16 @@
+{
+  "name": "paylora-pro",
+  "version": "1.0.0",
+  "description": "Paylora Pro – payments platform MVP",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "payments",
+    "dashboard",
+    "mvp",
+    "fintech"
+  ],
+  "license": "MIT"
+}
