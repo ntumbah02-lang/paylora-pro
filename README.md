@@ -1,34 +1,17 @@
-# Paylora Pro
+# Paylora Pro - API Paiement Minimaliste
 
-Paylora Pro est une plateforme MVP de paiement conçue pour suivre les paiements, visualiser les métriques et simuler un flux simple de transactions.
+MVP backend pour gestion de paiements session unique. Construit avec Express.js.
 
-## Fonctionnalités
-
-- Tableau de bord de performance
-- Suivi des transactions récentes
-- Soumission de paiements de démonstration
-- API HTTP simple pour l’intégration ou le test
-
-## Démarrage
+## Installation
 
 ```bash
-node server.js
-```
+npm ci# dev
+npm run dev
 
-Puis ouvrez :
-
-```text
-http://localhost:3000
-```
-
-## API
-
-- `GET /api/health` : vérifie le statut du service
-- `GET /api/summary` : retourne les métriques et transactions
-- `POST /api/payments` : enregistre un paiement simulé
-
-## Stack
-
-- JavaScript vanilla
-- Node.js, HTTP natif
-- HTML/CSS/JS pour le front
+# prod
+npm startcurl http://localhost:3000/api/healthcurl -X POST http://localhost:3000/api/payments \
+  -H "Content-Type: application/json" \
+  -d '{"amount":100,"currency":"USD"}'npm test
+npm run test -- --coveragenpm run lint
+npm run lint:fixdocker build -t paylora-pro .
+docker run -p 3000:3000 paylora-pro
